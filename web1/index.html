@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<head>
+    <title>Sport</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+    <header class="header">
+        <img src="image/Youtube_logo.png" alt="LogoYutube" class="logo">
+        <div class="headText">
+            <div class="menu-large">
+                <p>Футбол</p>
+                <p>Волейбол</p>
+                <p>Більярд</p>
+            </div>
+            <div class="menu-small">
+                <div class="dropdown" id="dropdown">
+                    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="bars" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="menu-icon" id="menu-icon"><path fill="currentColor" d="M16 132h416c8.837 0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163 0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z" class=""></path></svg>
+                    <div class="dropdown-content">
+                        <p onclick="closeDropdown()">Футбол</p>
+                        <p onclick="closeDropdown()">Волейбол</p>
+                        <p onclick="closeDropdown()">Більярд</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <main class="main">
+        <div id="liquid">
+            <div class="recdiv">
+                <img src="image/football.jpg" alt="football" class="recimage">
+                <p><br><br><br>Футбол<br><br>
+                    Типу прикольний вид спорту, в який грають 22 людини. <br>
+                </p>
+            </div>
+            <div class="recdiv">
+                <img src="image/volleyball.jpg" alt="volleyball" class="recimage">
+                <p><br><br><br><br>Волейбол<br><br>
+                    А тут вже грають тіпи на піску, або не на піску, як повезе з погодою! <br>
+                </p>      
+            </div>
+            <div class="recdiv">
+                <img src="image/poolgame.jpg" alt="poolgame" class="recimage">
+                <p><br><br><br><br>Більярд<br><br>
+                    Це прикольний вид спорту. Тут можно грати вдвох і досить дешево. <br>
+                </p>      
+            </div>
+        </div>
+    </main>
+    <footer>
+        <p>Чіназес!</p>
+    </footer>
+</body>
+<script>
+
+    function closeDropdown() {
+        var dropdownContent = document.querySelector('.dropdown-content');
+        dropdownContent.classList.remove('show');
+
+        var catImage = document.querySelector('.logo');
+        catImage.style.width = '70px';
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var menuIcon = document.getElementById('menu-icon');
+        var dropdownContent = document.querySelector('.dropdown-content');
+        var catImage = document.querySelector('.logo');
+
+        menuIcon.addEventListener('click', function() {
+            event.stopPropagation();
+            dropdownContent.classList.toggle('show');
+            catImage.style.width = '350px';
+        });
+
+        document.addEventListener('click', function(event) {
+            var targetElement = event.target;
+            var isMenu = targetElement.closest('.dropdown-content');
+
+            if (!isMenu) {
+                closeDropdown();
+            }
+        });
+    });
+</script>
+</html>
