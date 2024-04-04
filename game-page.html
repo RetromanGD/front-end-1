@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<style>
+canvas {
+    border: 1px solid #000;
+    background-color: #f1f1f1;
+    display: block;
+    margin: 0 auto;
+}
+</style>
+</head>
+<body onload="showMainMenu()">
+<canvas id="gameCanvas" width="600" height="400"></canvas>
+
+<script>
+var snake;
+var snakeSize = 20;
+var food;
+var foodSize = 20;
+var direction;
+var score = 0;
+var highScore = localStorage.getItem('snakeHighScore') || 0;
+var gameInterval; // змінна для зберігання ідентифікатора інтервалу оновлення гри
+
+// Звуки
+var gameOverSound = new Audio('game_over_sound.mp3');
+var eatSound = new Audio('eat_sound.mp3');
+
+function showMainMenu() {
+    var canvas = document.getElementById("gameCanvas");
+    var ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw main menu
+    ctx.fillStyle = '#000';
+    ctx.font = '30px Arial';
+    ctx.fillText("Snake Game", canvas.width / 2 - 100, canvas.height / 2 - 50);
+    ctx.font = '20px Arial';
+    ctx.fillText("Press 'Space' to start", canvas.width / 2 - 100, canvas.height / 2);
+    ctx.fillText("High Score: " + highScore, canvas.width / 2 - 100, canvas.height / 2 + 50);
+
+    window.addEventListener('keydown', function (e) {
+        if (e.key === ' ') {
+            startGame();
+        }
+    });
+}
+
+function startGame() {
+    clearInterval(gameInterval); // Очищаємо попередній інтервал, якщо він існує
+    var canvas = document.getElementById("gameCanvas");
+    var ctx = canvas.getContext("2d");
+    snake = [{x: 10, y: 10}];
+    direction = 'right';
+    createFood();
+    gameInterval = setInterval(updateGameArea, 100); // Зберігаємо ідентифікатор нового інтервалу
+    window.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowUp' && direction !== 'down') direction = 'up';
+        else if (e.key === 'ArrowDown' && direction !== 'up') direction = 'down';
+        else if (e.key === 'ArrowLeft' && direction !== 'right') direction = 'left';
+        else if (e.key === 'ArrowRight' && direction !== 'left') direction = 'right';
+    });
+}
+
+function createFood() {
+    food = {
+        x: Math.floor(Math.random() * (gameCanvas.width / snakeSize)) * snakeSize + snakeSize / 2,
+        y: Math.floor(Math.random() * (gameCanvas.height / snakeSize)) * snakeSize + snakeSize / 2
+    };
+}
+
+function updateGameArea() {
+    var gameCanvas = document.getElementById("gameCanvas");
+    var ctx = gameCanvas.getContext("2d");
+    ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+
+    drawGrid(ctx, gameCanvas.width, gameCanvas.height, snakeSize);
+
+    var newHead = {x: snake[0].x, y: snake[0].y};
+    if (direction === 'up') newHead.y -= snakeSize;
+    else if (direction === 'down') newHead.y += snakeSize;
+    else if (direction === 'left') newHead.x -= snakeSize;
+    else if (direction === 'right') newHead.x += snakeSize;
+
+    // Перевірка на зіткнення змійки з собою
+    for (var i = 1; i < snake.length; i++) {
+        if (snake[i].x === newHead.x && snake[i].y === newHead.y) {
+            gameOver();
+            return;
+        }
+    }
+
+    if (newHead.x < 0 || newHead.x >= gameCanvas.width || newHead.y < 0 || newHead.y >= gameCanvas.height) {
+        gameOver();
+        return;
+    }
+
+    if (newHead.x === food.x && newHead.y === food.y) {
+        snake.unshift(newHead);
+        score++;
+        if (score > highScore) {
+            highScore = score;
+            localStorage.setItem('snakeHighScore', highScore);
+        }
+        createFood();
+        eatSound.play(); // Відтворюємо звук з'їдання яблука
+    } else {
+        snake.pop();
+        snake.unshift(newHead);
+    }
+
+    snake.forEach(function (segment, index) {
+        ctx.fillStyle = index === 0 ? 'blue' : 'green';
+        ctx.fillRect(segment.x - snakeSize / 2, segment.y - snakeSize / 2, snakeSize, snakeSize);
+    });
+
+    ctx.fillStyle = 'red';
+    ctx.beginPath();
+    ctx.arc(food.x, food.y, foodSize / 2, 0, 2 * Math.PI);
+    ctx.fill();
+
+    document.getElementById("score").innerText = "Score: " + score;
+}
+
+function drawGrid(ctx, width, height, cellSize) {
+    ctx.strokeStyle = '#ddd';
+    for (var x = 0; x <= width; x += cellSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+    }
+    for (var y = 0; y <= height; y += cellSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+    }
+}
+
+function gameOver() {
+    clearInterval(gameInterval); // Очищаємо інтервал при завершенні гри
+    var canvas = document.getElementById("gameCanvas");
+    var ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#000';
+    ctx.font = '30px Arial';
+    ctx.fillText("Game Over! Your score: " + score, canvas.width / 2 - 150, canvas.height / 2);
+    score = 0;
+    showMainMenu();
+    gameOverSound.play(); // Відтворюємо звук завершення гри
+}
+
+function resetHighScore() {
+    localStorage.removeItem('snakeHighScore');
+    highScore = 0;
+    var canvas = document.getElementById("gameCanvas");
+    var ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    showMainMenu();
+}
+
+</script>
+<div id="score" style="text-align: center; margin-top: 10px; font-weight: bold;"></div>
+<button onclick="resetHighScore()">Reset High Score</button>
+</body>
+</html>

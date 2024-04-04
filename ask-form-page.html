@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+  <header role="banner">
+    <h1 style="font-size: 24px;">Опитування про комп'ютерні ігри</h1>
+</header>
+<h2>Яким іграм ви віддаєте перевагу?</h2>
+<form id="surveyForm">
+  <label for="genre">Оберіть ваш улюблений жанр ігор</label>
+  <select id="genre" name="genre">
+    <option value="action">Екшн</option>
+    <option value="rpg">Рольові</option>
+    <option value="strategy">Стратегії</option>
+    <option value="simulation">Симулятори</option>
+    <option value="adventure">Пригодницькі</option>
+  </select><br><br>
+
+  <label>Оберіть платформу, на якій ви граєте:</label><br>
+  <input type="checkbox" id="platform1" name="platform" value="PC">
+  <label for="platform1">PC</label><br>
+  <input type="checkbox" id="platform2" name="platform" value="PlayStation">
+  <label for="platform2">PlayStation</label><br>
+  <input type="checkbox" id="platform3" name="platform" value="Xbox">
+  <label for="platform3">Xbox</label><br>
+  <input type="checkbox" id="platform4" name="platform" value="Nintendo Switch">
+  <label for="platform4">Nintendo Switch</label><br><br>
+
+  <label for="playtime">Скільки годин на тиждень ви приблизно проводите, граючи в ігри?</label><br>
+  <input type="number" id="playtime" name="playtime" min="0" max="168"><br><br>
+
+  <label for="favoriteGame">Яка ваша улюблена гра за останній рік?</label><br>
+  <input type="text" id="favoriteGame" name="favoriteGame"><br><br>
+
+  <button type="submit">Зберегти результат</button>
+</form>
+
+<div id="surveyResults">
+  <h2>Результати опитування</h2>
+  <ul id="savedParticipants">
+
+  </ul>
+</div>
+
+<div id="filterOptions">
+  <h2>Фільтри</h2>
+  <label for="genreFilter">Жанр:</label>
+  <select id="genreFilter">
+    <option value="">Усі</option>
+    <option value="action">Екшн</option>
+    <option value="rpg">Рольові</option>
+    <option value="strategy">Стратегії</option>
+    <option value="simulation">Симулятори</option>
+    <option value="adventure">Пригодницькі</option>
+  </select><br><br>
+  <label for="platformFilter">Платформа:</label><br>
+  <input type="checkbox" id="platformFilter1" name="platformFilter" value="PC">
+  <label for="platformFilter1">PC</label><br>
+  <input type="checkbox" id="platformFilter2" name="platformFilter" value="PlayStation">
+  <label for="platformFilter2">PlayStation</label><br>
+  <input type="checkbox" id="platformFilter3" name="platformFilter" value="Xbox">
+  <label for="platformFilter3">Xbox</label><br>
+  <input type="checkbox" id="platformFilter4" name="platformFilter" value="Nintendo Switch">
+  <label for="platformFilter4">Nintendo Switch</label><br><br>
+
+  <label for="playtimeFilter">Мінімальна кількість годин на тиждень:</label><br>
+  <input type="number" id="playtimeFilter" name="playtimeFilter" min="0" max="168"><br><br>
+
+  <label for="favoriteGameFilter">Фільтрувати за улюбленою грою:</label><br>
+  <input type="text" id="favoriteGameFilter" name="favoriteGameFilter"><br><br>
+  
+  <button type="button" id="filterButton">Фільтрувати</button>
+  <button type="button" id="clearButton">Очистити localStorage</button>
+</div>
+
+<div id="filterResults">
+  <h2>Результати фільтрації</h2>
+  <ul id="filteredParticipants">
+
+  </ul>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+  const form = document.getElementById('surveyForm');
+  const savedParticipantsList = document.getElementById('savedParticipants');
+  const filterButton = document.getElementById('filterButton');
+  const clearButton = document.getElementById('clearButton');
+  const filteredParticipantsList = document.getElementById('filteredParticipants');
+
+  form.addEventListener('submit', function(event) {
+  event.preventDefault();
+  const formData = new FormData(form);
+  const answers = {};
+
+  for (const [key, value] of formData.entries()) {
+    if (answers[key]) {
+      if (!Array.isArray(answers[key])) {
+        answers[key] = [answers[key]]; 
+      }
+      answers[key].push(value); 
+    } else {
+      answers[key] = value;
+    }
+  }
+
+  let surveyResults = localStorage.getItem('surveyResults');
+  if (!surveyResults) {
+    surveyResults = [];
+  } else {
+    surveyResults = JSON.parse(surveyResults);
+    if (!Array.isArray(surveyResults)) {
+      surveyResults = [];
+    }
+  }
+
+  surveyResults.push(answers);
+  localStorage.setItem('surveyResults', JSON.stringify(surveyResults));
+
+  console.log('Результати опитування збережено:', answers);
+  displaySavedResults();
+});
+
+function displaySavedResults() {
+    savedParticipantsList.innerHTML = '';
+
+    let surveyResults = localStorage.getItem('surveyResults');
+    if (surveyResults) {
+      surveyResults = JSON.parse(surveyResults);
+      surveyResults.forEach(participant => {
+        const listItem = document.createElement('li');
+        const platforms = Array.isArray(participant.platform) ? participant.platform.join(', ') : participant.platform;
+        listItem.textContent = `Улюблений жанр: ${participant.genre}, Платформа: ${platforms ? platforms : 'Немає'}, Годин на тиждень: ${participant.playtime}, Улюблена гра: ${participant.favoriteGame}`;
+        savedParticipantsList.appendChild(listItem);
+      });
+    }
+  }
+
+  function displayFilteredResults(participants) {
+    filteredParticipantsList.innerHTML = '';
+
+    participants.forEach(participant => {
+      const listItem = document.createElement('li');
+      const platforms = Array.isArray(participant.platform) ? participant.platform.join(', ') : participant.platform;
+      listItem.textContent = `Улюблений жанр: ${participant.genre}, Платформа: ${platforms ? platforms : 'Немає'}, Годин на тиждень: ${participant.playtime}, Улюблена гра: ${participant.favoriteGame}`;
+      filteredParticipantsList.appendChild(listItem);
+    });
+  }
+
+  function filterParticipants() {
+    const surveyResults = JSON.parse(localStorage.getItem('surveyResults')) || [];
+    const genreFilter = document.getElementById('genreFilter').value;
+    const platformFilters = Array.from(document.querySelectorAll('input[name="platformFilter"]:checked')).map(el => el.value);
+    const playtimeFilter = document.getElementById('playtimeFilter').value;
+    const favoriteGameFilter = document.getElementById('favoriteGameFilter').value;
+
+    let filteredParticipants = surveyResults;
+
+    if (genreFilter) {
+      filteredParticipants = filteredParticipants.filter(participant => participant.genre === genreFilter);
+    }
+
+    if (platformFilters.length > 0) {
+      filteredParticipants = filteredParticipants.filter(participant => {
+        return platformFilters.every(platform => participant.platform.includes(platform));
+      });
+    }
+
+    if (playtimeFilter) {
+      filteredParticipants = filteredParticipants.filter(participant => participant.playtime >= playtimeFilter);
+    }
+
+    if (favoriteGameFilter) {
+      filteredParticipants = filteredParticipants.filter(participant => participant.favoriteGame.toLowerCase().includes(favoriteGameFilter.toLowerCase()));
+    }
+
+    displayFilteredResults(filteredParticipants);
+  }
+
+  filterButton.addEventListener('click', filterParticipants);
+
+  clearButton.addEventListener('click', function() {
+    localStorage.removeItem('surveyResults');
+    savedParticipantsList.innerHTML = '';
+    filteredParticipantsList.innerHTML = '';
+  });
+
+  displaySavedResults();
+});
+</script>
+
+</body>
+</html>
